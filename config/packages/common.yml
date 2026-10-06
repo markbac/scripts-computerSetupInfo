@@ -1,0 +1,20 @@
+# Cross-platform packages that install the same way on every OS.
+#
+# base     = safe for a work machine
+# personal = home machines only
+#
+# Existing package lists still live in the scripts and playbooks and will be
+# migrated here under issue #9. Entries below are the additions from issue #17.
+
+npm:
+  base:
+    - markdownlint-cli2
+    - "@mermaid-js/mermaid-cli"
+  personal: []
+
+# Install with pipx (or a venv) rather than system pip, see issue #7.
+pip:
+  base:
+    - yamllint
+    - pre-commit
+  personal: []

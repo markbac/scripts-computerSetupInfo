@@ -1,0 +1,34 @@
+# Windows packages.
+#
+# base     = safe for a work machine
+# personal = home machines only
+#
+# Package names have not yet been verified on a Windows machine, confirm them
+# when the install script is wired up (issue #16). Tools that are Linux only
+# (tmux, gdb, picocom, podman, btop) or already covered by the existing
+# Chocolatey list (cppcheck, llvm, wireshark) are not repeated here.
+# Existing lists still live in the .bat files and will be migrated here under
+# issue #9.
+
+winget:
+  base:
+    - CommandLine.Wave
+    - GitHub.cli
+  personal: []
+
+scoop:
+  base:
+    - ripgrep
+    - fzf
+    - jq
+    - shellcheck
+    - shfmt
+    - pandoc
+    - git-lfs
+    - delta
+    - eza
+    - just
+    - direnv
+    - pipx
+    - ninja
+  personal: []

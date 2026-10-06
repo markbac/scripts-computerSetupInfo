@@ -1,0 +1,54 @@
+# Linux and WSL packages.
+#
+# base     = safe for a work machine
+# personal = home machines only
+#
+# Names are Debian/Ubuntu package names. Availability varies by release:
+# gh, eza, just and git-lfs need a recent Ubuntu, otherwise use the vendor
+# repository or another channel. Existing lists still live in the scripts and
+# playbooks and will be migrated here under issue #9.
+
+apt:
+  base:
+    # shell and search
+    - ripgrep
+    - fzf
+    - jq
+    - tmux
+    - direnv
+    # code quality
+    - shellcheck
+    - shfmt
+    - ansible-lint
+    # docs
+    - pandoc
+    # git
+    - git-lfs
+    - gh
+    # embedded and IoT
+    - gdb
+    - picocom
+    - ninja-build
+    - clang-format
+    - cppcheck
+    - tshark
+    # python
+    - pipx
+    # containers and system tools
+    - podman
+    - btop
+    - eza
+    - just
+  personal: []
+
+brew:
+  base:
+    - git-delta
+  personal: []
+
+snap:
+  base:
+    # Wave Terminal. GUI app, so skip it inside WSL and install it on the
+    # Windows side. It may need --classic, confirm before wiring this up.
+    - waveterm
+  personal: []
