@@ -1,0 +1,42 @@
+---
+# Snap and Flatpak need a desktop session, so they are skipped on WSL.
+- name: Install snap apps
+  become: "{{ need_sudo }}"
+  when:
+    - not is_wsl
+    - ansible_facts.service_mgr == 'systemd'
+    - (want.snap + want.snap_classic) | length > 0
+  block:
+    - name: Install snaps
+      community.general.snap:
+        name: "{{ want.snap }}"
+        state: present
+      when: want.snap | length > 0
+
+    - name: Install classic snaps
+      community.general.snap:
+        name: "{{ want.snap_classic }}"
+        classic: true
+        state: present
+      when: want.snap_classic | length > 0
+
+- name: Install flatpak apps
+  when:
+    - not is_wsl
+    - want.flatpak | length > 0
+  block:
+    - name: Add the Flathub remote
+      community.general.flatpak_remote:
+        name: flathub
+        flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+        method: user
+      # In a dry run on a new machine flatpak is not installed yet.
+      ignore_errors: "{{ ansible_check_mode }}"
+
+    - name: Install flatpaks
+      community.general.flatpak:
+        name: "{{ want.flatpak }}"
+        remote: flathub
+        method: user
+        state: present
+      ignore_errors: "{{ ansible_check_mode }}"

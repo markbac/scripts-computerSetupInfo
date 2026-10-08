@@ -1,0 +1,4 @@
+# Local machine settings and run output, never committed
+config/config.local.yml
+*.log
+*.pre-setup

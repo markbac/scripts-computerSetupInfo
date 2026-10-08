@@ -1,0 +1,6 @@
+---
+# Only needed when Ansible came from pipx or pip. The "ansible" package from
+# apt (Ubuntu 24.04 and later) already bundles these.
+collections:
+  - name: community.general
+  - name: community.crypto

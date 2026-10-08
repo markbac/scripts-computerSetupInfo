@@ -1,0 +1,39 @@
+---
+- name: Skip the git identity until it is set
+  ansible.builtin.debug:
+    msg: >-
+      user.git_email is still the example value, so git is not configured.
+      Copy config/config.example.yml to config/config.local.yml and edit it.
+  when: cfg.user.git_email == 'you@example.com'
+
+- name: Configure the git identity
+  community.general.git_config:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    scope: global
+  loop:
+    - { name: user.name, value: "{{ cfg.user.git_name }}" }
+    - { name: user.email, value: "{{ cfg.user.git_email }}" }
+  when: cfg.user.git_email != 'you@example.com'
+
+- name: Create an SSH key
+  when: cfg.user.generate_ssh_key | bool
+  block:
+    - name: Make sure ~/.ssh exists
+      ansible.builtin.file:
+        path: "{{ home }}/.ssh"
+        state: directory
+        mode: "0700"
+
+    - name: Generate an ed25519 key if there is none
+      community.crypto.openssh_keypair:
+        path: "{{ home }}/.ssh/id_ed25519"
+        type: ed25519
+        comment: "{{ cfg.user.git_email }}"
+        backend: opensshbin
+      register: ssh_key
+
+    - name: Show the public key to add to GitHub or GitLab
+      ansible.builtin.debug:
+        msg: "{{ ssh_key.public_key }}"
+      when: ssh_key is changed  # noqa: no-handler

@@ -1,0 +1,249 @@
+---
+# Set up a Linux or WSL machine from the YAML config in ../../config.
+#
+# Run it through ../setup.sh, or directly:
+#   ansible-playbook site.yml --ask-become-pass
+#   ansible-playbook site.yml --check --diff             # dry run
+#   ansible-playbook site.yml -e profile=personal        # base + personal packages
+#   ansible-playbook site.yml --tags apt,dotfiles        # only some sections
+#
+# The play runs as your own user. Only the tasks that need root use sudo, so
+# "~" is your home directory. Each section is wrapped so a failure is recorded
+# and the rest still runs. The failures are listed at the end and the exit
+# code is non-zero.
+
+- name: Set up this machine
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  vars:
+    repo_root: "{{ playbook_dir | dirname | dirname }}"
+    config_dir: "{{ repo_root }}/config"
+    # Point this somewhere else to use a private set of package lists.
+    packages_dir: "{{ config_dir }}/packages"
+    home: "{{ ansible_facts.env.HOME }}"
+    cache_dir: "{{ home }}/.cache/setup"
+    need_sudo: "{{ ansible_facts.user_uid != 0 }}"
+    dotfiles:
+      - .bashrc
+      - .zshrc
+      - .profile
+      - .p10k.zsh
+
+  pre_tasks:
+    - name: Load the default settings and pinned versions
+      ansible.builtin.include_vars:
+        file: "{{ item.file }}"
+        name: "{{ item.name }}"
+      loop:
+        - { file: "{{ config_dir }}/config.example.yml", name: cfg_defaults }
+        - { file: "{{ config_dir }}/pins.yml", name: pins }
+      loop_control:
+        label: "{{ item.name }}"
+      tags: always
+
+    - name: Look for local settings
+      ansible.builtin.stat:
+        path: "{{ config_dir }}/config.local.yml"
+      register: local_settings
+      tags: always
+
+    - name: Load local settings
+      ansible.builtin.include_vars:
+        file: "{{ config_dir }}/config.local.yml"
+        name: cfg_local
+      when: local_settings.stat.exists
+      tags: always
+
+    - name: Load the package lists
+      ansible.builtin.include_vars:
+        file: "{{ packages_dir }}/{{ item }}.yml"
+        name: "pkg_{{ item }}"
+      loop:
+        - common
+        - linux
+      tags: always
+
+    - name: Detect the environment
+      ansible.builtin.set_fact:
+        cfg: "{{ cfg_defaults | combine(cfg_local | default({}), recursive=True) }}"
+        # -e profile=personal wins over the config file.
+        active_profile: "{{ profile | default((cfg_defaults | combine(cfg_local | default({}), recursive=True)).profile) }}"
+        is_wsl: "{{ 'microsoft' in (lookup('ansible.builtin.file', '/proc/version', errors='ignore') | default('', true) | lower) }}"
+        is_raspberry_pi: "{{ 'raspberry pi' in (lookup('ansible.builtin.file', '/proc/device-tree/model', errors='ignore') | default('', true) | lower) }}"
+        deb_arch: "{{ {'x86_64': 'amd64', 'aarch64': 'arm64', 'armv7l': 'armhf'}.get(ansible_facts.architecture, ansible_facts.architecture) }}"
+        failed_steps: []
+      tags: always
+
+    - name: Check this machine is supported
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.os_family == 'Debian'
+          - active_profile in ['work', 'personal']
+        fail_msg: >-
+          This playbook supports Debian and Ubuntu (including WSL), and the
+          profile must be 'work' or 'personal'. Found
+          {{ ansible_facts.distribution }} with profile '{{ active_profile }}'.
+        quiet: true
+      tags: always
+
+    - name: Choose the package tiers for the active profile
+      ansible.builtin.set_fact:
+        tiers: "{{ ['base', 'personal'] if active_profile == 'personal' else ['base'] }}"
+      tags: always
+
+    - name: Work out what to install
+      ansible.builtin.set_fact:
+        want: "{{ want | default({}) | combine({item.key: tiers | map('extract', item.value) | flatten}) }}"
+      loop: "{{ (pkg_common | dict2items) + (pkg_linux | dict2items) }}"
+      loop_control:
+        label: "{{ item.key }}"
+      tags: always
+
+    - name: Create the cache directory
+      ansible.builtin.file:
+        path: "{{ cache_dir }}"
+        state: directory
+        mode: "0700"
+      # Also created in a dry run: it only holds downloads, and the download
+      # tasks need it to exist to be checked.
+      check_mode: false
+      tags: always
+
+  tasks:
+    - name: System packages
+      tags: [apt]
+      become: "{{ need_sudo }}"
+      block:
+        - name: Install system packages
+          ansible.builtin.import_tasks: tasks/apt.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Visual Studio Code
+      tags: [vscode]
+      block:
+        - name: Install VS Code and its extensions
+          ansible.builtin.import_tasks: tasks/vscode.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Zsh framework
+      tags: [shell]
+      block:
+        - name: Install oh-my-zsh and powerlevel10k
+          ansible.builtin.import_tasks: tasks/oh_my_zsh.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Git and SSH
+      tags: [git]
+      block:
+        - name: Configure git
+          ansible.builtin.import_tasks: tasks/git.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Dotfiles
+      tags: [dotfiles]
+      block:
+        - name: Link the dotfiles
+          ansible.builtin.import_tasks: tasks/dotfiles.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Fonts
+      tags: [fonts]
+      block:
+        - name: Install Nerd Fonts
+          ansible.builtin.import_tasks: tasks/fonts.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Python tools
+      tags: [python]
+      block:
+        - name: Install Python libraries and tools
+          ansible.builtin.import_tasks: tasks/python.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Node.js
+      tags: [node]
+      block:
+        - name: Install nvm, Node and npm packages
+          ansible.builtin.import_tasks: tasks/node.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Rust
+      tags: [rust]
+      block:
+        - name: Install rustup and cargo packages
+          ansible.builtin.import_tasks: tasks/rust.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: WSL settings
+      tags: [wsl]
+      become: "{{ need_sudo }}"
+      block:
+        - name: Configure WSL
+          ansible.builtin.import_tasks: tasks/wsl.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Snap and Flatpak apps
+      tags: [apps]
+      block:
+        - name: Install snap and flatpak apps
+          ansible.builtin.import_tasks: tasks/apps.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Homebrew
+      tags: [brew]
+      block:
+        - name: Install Homebrew and its packages
+          ansible.builtin.import_tasks: tasks/homebrew.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+    - name: Extra tools
+      tags: [extras]
+      block:
+        - name: Install the extra tools
+          ansible.builtin.import_tasks: tasks/extras.yml
+      rescue:
+        - name: Record the failure
+          ansible.builtin.import_tasks: tasks/record_failure.yml
+
+  post_tasks:
+    - name: Summary
+      ansible.builtin.debug:
+        msg:
+          - "Profile: {{ active_profile }}"
+          - >-
+            Environment: {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}
+            ({{ deb_arch }}){{ ', WSL' if is_wsl else '' }}{{ ', Raspberry Pi' if is_raspberry_pi else '' }}
+          - "Failed steps: {{ failed_steps | length }}"
+      tags: always
+
+    - name: List the failed steps
+      ansible.builtin.fail:
+        msg: "{{ ['These steps failed, see the log for details:'] + failed_steps }}"
+      when: failed_steps | length > 0
+      tags: always

@@ -1,0 +1,49 @@
+---
+# Fonts are used by the terminal, which on WSL runs on the Windows side.
+- name: Install Nerd Fonts
+  when:
+    - not is_wsl
+    - want.fonts | length > 0
+  vars:
+    fonts_dir: "{{ home }}/.local/share/fonts/NerdFonts"
+    fonts_version: "{{ pins.nerd_fonts.version }}"
+  block:
+    - name: Make sure the font directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop: "{{ [home ~ '/.local/share/fonts', fonts_dir] + (want.fonts | map('regex_replace', '^', fonts_dir ~ '/') | list) }}"
+
+    - name: Download the font archives (pinned version, checksum verified)
+      ansible.builtin.get_url:
+        url: "https://github.com/ryanoasis/nerd-fonts/releases/download/{{ fonts_version }}/{{ item }}.zip"
+        dest: "{{ cache_dir }}/{{ item }}-{{ fonts_version }}.zip"
+        checksum: "sha256:{{ pins.nerd_fonts.sha256[item] }}"
+        mode: "0600"
+      loop: "{{ want.fonts }}"
+
+    - name: Unpack the fonts
+      ansible.builtin.unarchive:
+        src: "{{ cache_dir }}/{{ item }}-{{ fonts_version }}.zip"
+        dest: "{{ fonts_dir }}/{{ item }}"
+        remote_src: true
+        creates: "{{ fonts_dir }}/{{ item }}/.version-{{ fonts_version }}"
+      loop: "{{ want.fonts }}"
+      register: fonts_unpacked
+      # In a dry run the archives are not downloaded, so there is nothing to unpack.
+      when: not ansible_check_mode
+
+    - name: Record the installed font version
+      ansible.builtin.copy:
+        content: ""
+        dest: "{{ fonts_dir }}/{{ item }}/.version-{{ fonts_version }}"
+        mode: "0644"
+        force: false
+      loop: "{{ want.fonts }}"
+      when: not ansible_check_mode
+
+    - name: Refresh the font cache
+      ansible.builtin.command: fc-cache -f
+      changed_when: true
+      when: fonts_unpacked is changed  # noqa: no-handler

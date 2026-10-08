@@ -1,0 +1,39 @@
+---
+# On WSL, VS Code runs on the Windows side, so only extensions are handled.
+- name: Add the Microsoft apt repository and install VS Code
+  become: "{{ need_sudo }}"
+  when:
+    - "'vscode' in want.installers"
+    - not is_wsl
+  block:
+    - name: Add the signed VS Code repository
+      ansible.builtin.deb822_repository:
+        name: vscode
+        types: deb
+        uris: https://packages.microsoft.com/repos/code
+        suites: stable
+        components: main
+        architectures: "{{ deb_arch }}"
+        signed_by: https://packages.microsoft.com/keys/microsoft.asc
+
+    - name: Install VS Code
+      ansible.builtin.apt:
+        name: code
+        update_cache: true
+        state: present
+
+- name: List the installed VS Code extensions
+  ansible.builtin.command: code --list-extensions
+  register: vscode_installed
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: "'vscode' in want.installers"
+
+- name: Install the missing VS Code extensions
+  ansible.builtin.command: "code --install-extension {{ item }}"
+  loop: "{{ want.vscode_extensions | map('lower') | difference(vscode_installed.stdout_lines | default([]) | map('lower') | list) }}"
+  changed_when: true
+  when:
+    - "'vscode' in want.installers"
+    - vscode_installed.rc | default(1) == 0

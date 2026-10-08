@@ -1,0 +1,23 @@
+---
+- name: Update the apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Upgrade installed packages
+  ansible.builtin.apt:
+    upgrade: dist
+  when: cfg.apt_upgrade | bool
+
+- name: Install the apt packages for the active profile
+  ansible.builtin.apt:
+    name: "{{ want.apt }}"
+    state: present
+
+- name: Install the Raspberry Pi packages
+  ansible.builtin.apt:
+    name: "{{ want.apt_raspberry_pi }}"
+    state: present
+  when:
+    - is_raspberry_pi
+    - want.apt_raspberry_pi | length > 0

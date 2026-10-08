@@ -1,0 +1,4 @@
+---
+- name: Remember which step failed
+  ansible.builtin.set_fact:
+    failed_steps: "{{ failed_steps + [ansible_failed_task.name ~ ' -- ' ~ (ansible_failed_result.msg | default('no message') | string | truncate(200))] }}"

@@ -1,0 +1,31 @@
+---
+- name: Install Python libraries into ~/.venvs/tools
+  ansible.builtin.pip:
+    name: "{{ want.pip_libs }}"
+    virtualenv: "{{ home }}/.venvs/tools"
+    virtualenv_command: python3 -m venv
+  when: want.pip_libs | length > 0
+
+# The community.general.pipx module needs pipx 1.7 or later, but Ubuntu 24.04
+# ships 1.4, so the pipx command is used directly.
+- name: List the pipx apps already installed
+  ansible.builtin.command: pipx list --short
+  register: pipx_installed
+  changed_when: false
+  check_mode: false
+  failed_when: pipx_installed.rc != 0 and not ansible_check_mode
+
+- name: Install the missing pipx apps
+  ansible.builtin.command: "pipx install {{ item }}"
+  vars:
+    pipx_names: "{{ pipx_installed.stdout_lines | default([]) | map('split', ' ') | map('first') | map('lower') | list }}"
+  loop: "{{ want.pipx | map('lower') | difference(pipx_names) }}"
+  changed_when: true
+  when: pipx_installed.rc | default(1) == 0
+
+- name: Show the pipx apps a real run would install
+  ansible.builtin.debug:
+    msg: "{{ want.pipx | map('lower') | difference(pipx_names) }}"
+  vars:
+    pipx_names: "{{ pipx_installed.stdout_lines | default([]) | map('split', ' ') | map('first') | map('lower') | list }}"
+  when: ansible_check_mode

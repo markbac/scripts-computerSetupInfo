@@ -1,0 +1,26 @@
+---
+- name: Install oh-my-zsh and the powerlevel10k theme
+  when: "'oh_my_zsh' in want.installers"
+  block:
+    - name: Download the oh-my-zsh installer (pinned commit, checksum verified)
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/{{ pins.oh_my_zsh.commit }}/tools/install.sh"
+        dest: "{{ cache_dir }}/ohmyzsh-install.sh"
+        checksum: "sha256:{{ pins.oh_my_zsh.sha256 }}"
+        mode: "0700"
+
+    - name: Run the oh-my-zsh installer
+      ansible.builtin.command: sh "{{ cache_dir }}/ohmyzsh-install.sh" --unattended
+      args:
+        creates: "{{ home }}/.oh-my-zsh"
+      environment:
+        RUNZSH: "no"
+        CHSH: "no"
+        KEEP_ZSHRC: "yes"
+
+    - name: Install the powerlevel10k theme (pinned tag)
+      ansible.builtin.git:
+        repo: https://github.com/romkatv/powerlevel10k.git
+        dest: "{{ home }}/.oh-my-zsh/custom/themes/powerlevel10k"
+        version: "{{ pins.powerlevel10k.version }}"
+        depth: 1

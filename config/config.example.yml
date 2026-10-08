@@ -1,0 +1,20 @@
+# Machine settings. Copy this file to config.local.yml (git-ignored) and edit.
+# Values in config.local.yml override the ones here, key by key.
+#
+#   cp config/config.example.yml config/config.local.yml
+
+# Which packages to install:
+#   work     = the "base" lists only
+#   personal = "base" plus the "personal" lists
+# Override for a single run with: -e profile=personal (Ansible) or -Profile personal (Windows).
+profile: work
+
+user:
+  git_name: "Your Name"
+  git_email: "you@example.com"
+  # Generate an ed25519 key if none exists. It has no passphrase, so add one
+  # afterwards with: ssh-keygen -p -f ~/.ssh/id_ed25519
+  generate_ssh_key: false
+
+# Run a full dist-upgrade before installing apt packages.
+apt_upgrade: false

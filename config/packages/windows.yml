@@ -1,20 +1,25 @@
 # Windows packages.
 #
-# base     = safe for a work machine
-# personal = home machines only
+# Every top-level key has the same shape:
+#   base:     safe for a work machine
+#   personal: added on top when profile is "personal"
 #
-# Package names have not yet been verified on a Windows machine, confirm them
-# when the install script is wired up (issue #16). Tools that are Linux only
-# (tmux, gdb, picocom, podman, btop) or already covered by the existing
-# Chocolatey list (cppcheck, llvm, wireshark) are not repeated here.
-# Existing lists still live in the .bat files and will be migrated here under
-# issue #9.
+# Both keys must be present, even when empty. tests/validate_config.py checks this.
+#
+# winget IDs and Scoop names were checked against the winget-pkgs repository
+# and the Scoop Main and Extras buckets. Chocolatey names come from the
+# previous scripts and were not re-checked.
 
 winget:
   base:
     - CommandLine.Wave
     - GitHub.cli
-  personal: []
+    - Microsoft.Teams
+    - Rustlang.Rustup
+  personal:
+    - Valve.Steam
+    - EpicGames.EpicGamesLauncher
+    - Microsoft.VisualStudio.2022.Community
 
 scoop:
   base:
@@ -25,10 +30,97 @@ scoop:
     - shfmt
     - pandoc
     - git-lfs
-    - delta
     - eza
     - just
     - direnv
     - pipx
     - ninja
-  personal: []
+    - btop
+    - topgrade
+    - lsd
+    - broot
+    - dua
+  personal:
+    - macchina
+    - neofetch
+    - procs
+    - trippy
+
+choco:
+  base:
+    - powershell-core
+    - microsoft-windows-terminal
+    - git
+    - vscode
+    - cascadiafonts
+    - firacode
+    - 7zip
+    - powertoys
+    - notepadplusplus
+    - sysinternals
+    - python3
+    - drawio
+    - winscp
+    - winmerge
+    - tortoisegit
+    - putty
+    - graphviz
+    - llvm
+    - cppcheck
+    - plantuml
+    - nano
+    - treesizefree
+    - windirstat
+    - curl
+    - wireshark
+    - dbgate
+    - nvm
+    - oh-my-posh
+    - dotnet
+    - wsl2
+    - wsl-ubuntu-2204
+    - miktex
+    - adobereader
+    - irfanview
+    - irfanviewplugins
+    - googledrive
+    - onenote
+    - zoom
+    - bottom
+    - gitui
+    - bat
+    - mdcat
+    - tokei
+    - delta
+    - onefetch
+    - alacritty
+    - vnc-viewer
+    - openvpn
+    - hwmonitor
+  personal:
+    - vlc
+    - bluescreenview
+    - whocrashed
+    - speccy
+    - libreoffice-fresh
+    - docker-desktop
+    - googlechrome
+    - microsoft-edge
+    - opera
+    - firefox
+    - bulkrenameutility
+    - gimp
+    - paint.net
+    - foxitreader
+    - ccleaner
+    - synology-note-station-client
+    - synologydrive
+    - cloudstation
+    - sourcemonitor
+    - sonos-controller
+    - googleearthpro
+    - whatsapp
+    - obs-studio
+    - xnview
+    - bitdefender
+    - wolframalpha

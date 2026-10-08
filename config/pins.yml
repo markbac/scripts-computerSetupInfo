@@ -1,0 +1,63 @@
+# Pinned versions and SHA-256 checksums for everything downloaded outside a
+# package manager. Nothing is fetched from a moving branch, and each download
+# is verified against its checksum before it is used.
+#
+# To update a pin: change the version or commit, download the file, run
+# sha256sum on it, and paste the result here.
+
+nerd_fonts:
+  version: v3.5.1
+  # Checksums come from the SHA-256.txt published with the release.
+  sha256:
+    Meslo: fb104893ecd8f57e8afacbc0a7086b42657120448d056d6093c728a9afb8e237
+    Noto: 3258ff3163691cf089cf4c0e4140ec7d564eeb918a7e67786145e94ed124e1e8
+    RobotoMono: b5db570b0b2bf5a3a62911aeefd2c8df91a12dcb66261169e7353f984002d5b7
+    SourceCodePro: e0000bc77cd77279840d8613e98727548f81f291a571be0be8699c8e3be36fd3
+
+nvm:
+  version: v0.40.8
+  sha256: 48a0eee9a60e07422dce0eb5774754c83889570ca1ee2566c516acbe8af03a9e
+
+oh_my_zsh:
+  commit: 60c9a7a839b790cd905d0fd4419435124fd1bdc0
+  sha256: 5574b96e94dbcb769f0d1592fa83aeb6ca2caf41c6ae5d76fcc7f04c524b4f55
+
+powerlevel10k:
+  version: v1.20.0
+
+homebrew_install:
+  commit: 8ab1549dfa1189fd4d818a2116592d8f0ee06d8c
+  sha256: 5f333bbe53bc490e51e7ccb1df8779b3dd6ee73a1a7379efda216edb08ccb148
+
+pfetch:
+  commit: a906ff89680c78cec9785f3ff49ca8b272a0f96b
+  sha256: 083f362ec91178d20a846ad6705c8f48d6fd7ae13295d4c31b537bc8a60619d3
+
+# Keyed by Debian architecture name (amd64, arm64, armhf).
+ctop:
+  version: v0.7.7
+  sha256:
+    amd64: b78374734ebe3d14b6edee3d5512c911c250d7fa7f3f964cb00acd3bc5a02a09
+    arm64: d8d91e0fea53a8c78fa81192f078272e5a92f0ea6c4f0e38ec7c944d76e6f02f
+    armhf: 47375f029ea9e2c55d28d993396816d10d5a3e9761664a5c1b8aaab3c83f6593
+  # ctop names its 32-bit ARM build "arm".
+  asset_arch:
+    amd64: amd64
+    arm64: arm64
+    armhf: arm
+
+browsh:
+  version: v1.8.0
+  sha256:
+    amd64: 8c4f2e03ad00cd4d2910ff42d5ed1d7bcc2ac650fe8c29ac4e956be52c0c78f2
+    arm64: bb825993a7a4970cce0b34ccaa3546dca021e42c580cf69bcd32560506fc103c
+
+# The checksum is read from the .sha256 file published next to the download.
+rustup:
+  version: 1.28.2
+
+swagger_editor:
+  version: v5.8.10
+
+gitupdate:
+  commit: 3274421788064928acf2686e65c005c209517628

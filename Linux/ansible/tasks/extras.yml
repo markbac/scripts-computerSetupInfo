@@ -1,0 +1,112 @@
+---
+# Each tool is gated by the "installers" list in config/packages/linux.yml
+# and downloaded from a pinned, checksum-verified location (config/pins.yml).
+
+- name: Install Google Chrome from Google's signed apt repository
+  become: "{{ need_sudo }}"
+  when:
+    - "'chrome' in want.installers"
+    - deb_arch == 'amd64'
+  block:
+    - name: Add the Google Chrome repository
+      ansible.builtin.deb822_repository:
+        name: google-chrome
+        types: deb
+        uris: https://dl.google.com/linux/chrome/deb/
+        suites: stable
+        components: main
+        architectures: amd64
+        signed_by: https://dl.google.com/linux/linux_signing_key.pub
+
+    - name: Install Google Chrome
+      ansible.builtin.apt:
+        name: google-chrome-stable
+        update_cache: true
+        state: present
+
+- name: Install ctop
+  become: "{{ need_sudo }}"
+  when:
+    - "'ctop' in want.installers"
+    - deb_arch in pins.ctop.sha256
+  ansible.builtin.get_url:
+    url: >-
+      https://github.com/bcicen/ctop/releases/download/{{ pins.ctop.version }}/ctop-{{
+      pins.ctop.version | regex_replace('^v', '') }}-linux-{{ pins.ctop.asset_arch[deb_arch] }}
+    dest: /usr/local/bin/ctop
+    checksum: "sha256:{{ pins.ctop.sha256[deb_arch] }}"
+    mode: "0755"
+
+- name: Install browsh
+  become: "{{ need_sudo }}"
+  when:
+    - "'browsh' in want.installers"
+    - deb_arch in pins.browsh.sha256
+  block:
+    - name: Download the browsh package
+      ansible.builtin.get_url:
+        url: >-
+          https://github.com/browsh-org/browsh/releases/download/{{ pins.browsh.version }}/browsh_{{
+          pins.browsh.version | regex_replace('^v', '') }}_linux_{{ deb_arch }}.deb
+        dest: "{{ cache_dir }}/browsh-{{ pins.browsh.version }}-{{ deb_arch }}.deb"
+        checksum: "sha256:{{ pins.browsh.sha256[deb_arch] }}"
+        mode: "0644"
+
+    - name: Install the browsh package
+      ansible.builtin.apt:
+        deb: "{{ cache_dir }}/browsh-{{ pins.browsh.version }}-{{ deb_arch }}.deb"
+        state: present
+
+- name: Install pfetch
+  when: "'pfetch' in want.installers"
+  block:
+    - name: Make sure ~/.local/bin exists
+      ansible.builtin.file:
+        path: "{{ home }}/.local/bin"
+        state: directory
+        mode: "0755"
+
+    - name: Download pfetch (pinned commit, checksum verified)
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/dylanaraps/pfetch/{{ pins.pfetch.commit }}/pfetch"
+        dest: "{{ home }}/.local/bin/pfetch"
+        checksum: "sha256:{{ pins.pfetch.sha256 }}"
+        mode: "0755"
+
+- name: Install gitupdate
+  when: "'gitupdate' in want.installers"
+  block:
+    - name: Look for the Go toolchain
+      ansible.builtin.stat:
+        path: /usr/bin/go
+      register: go_toolchain
+
+    - name: Build gitupdate (pinned commit)
+      ansible.builtin.command: "go install github.com/nikitavoloboev/gitupdate@{{ pins.gitupdate.commit }}"
+      args:
+        creates: "{{ home }}/go/bin/gitupdate"
+      when: go_toolchain.stat.exists
+
+- name: Install the Swagger editor
+  when:
+    - "'swagger_editor' in want.installers"
+    - "'nvm' in want.installers"
+  environment:
+    NVM_DIR: "{{ home }}/.nvm"
+  block:
+    - name: Clone the Swagger editor (pinned tag)
+      ansible.builtin.git:
+        repo: https://github.com/swagger-api/swagger-editor.git
+        dest: "{{ home }}/swagger-editor"
+        version: "{{ pins.swagger_editor.version }}"
+        depth: 1
+
+    - name: Install its npm dependencies
+      ansible.builtin.shell: |
+        set -o pipefail
+        . "$NVM_DIR/nvm.sh"
+        npm install
+      args:
+        executable: /bin/bash
+        chdir: "{{ home }}/swagger-editor"
+        creates: "{{ home }}/swagger-editor/node_modules"

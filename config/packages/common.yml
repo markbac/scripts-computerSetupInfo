@@ -1,20 +1,142 @@
-# Cross-platform packages that install the same way on every OS.
+# Packages that install the same way on every OS.
 #
-# base     = safe for a work machine
-# personal = home machines only
+# Every top-level key has the same shape:
+#   base:     safe for a work machine
+#   personal: added on top when profile is "personal"
 #
-# Existing package lists still live in the scripts and playbooks and will be
-# migrated here under issue #9. Entries below are the additions from issue #17.
+# Both keys must be present, even when empty. tests/validate_config.py checks this.
 
+# Built from source with "cargo install". Needs rustup (see linux.yml installers).
+cargo:
+  base:
+    - mdbook
+    - mdbook-pdf
+    - mdbook-plantuml
+    - mdbook-codeblocks
+    - mdbook-mermaid
+    - cargo-update
+    - rink
+  personal:
+    - lfs
+    - rust-kanban
+    - kanorg
+    - rh
+    - xplr
+
+# Installed globally with npm (Node comes from nvm on Linux).
 npm:
   base:
+    - "@asyncapi/cli"
+    - "@asyncapi/generator"
+    - "@asyncapi/modelina"
+    - "@asyncapi/parser"
+    - mock-to-openapi
+    - ungit
+    - create-openapi-repo
     - markdownlint-cli2
     - "@mermaid-js/mermaid-cli"
-  personal: []
+  personal:
+    - vtop
+    - gtop
 
-# Install with pipx (or a venv) rather than system pip, see issue #7.
-pip:
+# Python command line tools, installed with pipx so each gets its own environment.
+pipx:
   base:
     - yamllint
     - pre-commit
-  personal: []
+    - httpie
+    - adr-tools-python
+    - adr-viewer
+    - pyadr
+    - aafigure
+    - mdbook-pdf-outline
+  personal:
+    - glances
+    - hyfetch
+
+# Extension IDs for "code --install-extension".
+vscode_extensions:
+  base:
+    - 42Crunch.vscode-openapi
+    - aaron-bond.better-comments
+    - alefragnani.project-manager
+    - anweber.httpbook
+    - anweber.vscode-httpyac
+    - aprilandjan.ascii-tree-generator
+    - asyncapi.asyncapi-preview
+    - AykutSarac.jsoncrack-vscode
+    - batisteo.vscode-django
+    - bierner.markdown-mermaid
+    - BitBelt.converttoasciiart
+    - bmlsolutions.dotuml
+    - bpruitt-goddard.mermaid-markdown-syntax-highlighting
+    - buianhthang.xml2json
+    - chrmarti.regex
+    - daiyy.quick-html-previewer
+    - DavidAnson.vscode-markdownlint
+    - derek-nextty.openapi-viewer
+    - docsmsft.docs-yaml
+    - donjayamanne.python-environment-manager
+    - donjayamanne.python-extension-pack
+    - DotJoshJohnson.xml
+    - DougFinke.vscode-pandoc
+    - eamodio.gitlens
+    - esbenp.prettier-vscode
+    - fernandoescolar.vscode-solution-explorer
+    - GitHub.vscode-pull-request-github
+    - googlecloudtools.cloudcode
+    - Gruntfuggly.todo-tree
+    - hashicorp.terraform
+    - hediet.vscode-drawio
+    - jebbs.plantuml
+    - johnpapa.vscode-peacock
+    - kamikillerto.vscode-colorize
+    - KevinRose.vsc-python-indent
+    - maattdd.gitless
+    - Markwhen.markwhen
+    - marp-team.marp-vscode
+    - MartinPicard.vscode-openapi
+    - mermade.openapi-lint
+    - mirone.milkdown
+    - mkloubert.vscode-kanban
+    - mohsen1.prettify-json
+    - ms-dotnettools.csharp
+    - ms-python.python
+    - ms-toolsai.jupyter-keymap
+    - ms-vscode-remote.remote-wsl
+    - ms-vscode.powershell
+    - ms-vsliveshare.vsliveshare
+    - ms-vsliveshare.vsliveshare-audio
+    - njpwerner.autodocstring
+    - nopeslide.vscode-drawio-plugin-mermaid
+    - philosowaffle.openapi-designer
+    - pomdtr.excalidraw-editor
+    - rangav.vscode-thunder-client
+    - redhat.vscode-xml
+    - redhat.vscode-yaml
+    - RoeySagie.markdown-sort
+    - shd101wyy.markdown-preview-enhanced
+    - simonguo.vscode-markdown-table-sort
+    - stoplight.spectral
+    - streetsidesoftware.code-spell-checker
+    - tberman.json-schema-validator
+    - tehpeng.diagramspreviewer
+    - telesoho.vscode-markdown-paste-image
+    - tintinweb.graphviz-interactive-preview
+    - tomoki1207.pdf
+    - VisualStudioExptTeam.intellicode-api-usage-examples
+    - VisualStudioExptTeam.vscodeintellicode
+    - VolcanicBytes.xsd-navigator
+    - voldemortensen.rainbow-tags
+    - vstirbu.vscode-mermaid-preview
+    - vscode-icons-team.vscode-icons
+    - waleedashraf.asyncapi-validator-vscode
+    - wayou.vscode-todo-highlight
+    - wholroyd.jinja
+    - wraith13.windows-terminal
+    - yzane.markdown-pdf
+    - yzhang.markdown-all-in-one
+    - zaaack.markdown-editor
+    - zoellner.openapi-preview
+  personal:
+    - tonybaloney.vscode-pets

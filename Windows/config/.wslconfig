@@ -1,0 +1,33 @@
+# WSL 2 settings. This file belongs in your Windows user profile:
+#   %USERPROFILE%\.wslconfig
+# Windows\setup.ps1 copies it there if you do not already have one.
+# Apply changes with: wsl --shutdown
+# Full list of options: https://learn.microsoft.com/windows/wsl/wsl-config
+
+# Settings here apply to every distro running on WSL 2.
+[wsl2]
+
+# Limits the VM to 3 GB of memory.
+memory=3GB
+
+# Gives the VM 2 virtual processors.
+processors=2
+
+# Swap space of 2 GB. The default is 25% of the available RAM.
+swap=2GB
+
+# Where the swap file lives. The default is %USERPROFILE%\AppData\Local\Temp\swap.vhdx
+swapfile=C:\\temp\\wsl-swap.vhdx
+
+# Keeps the memory WSL has claimed instead of handing free memory back to Windows.
+pageReporting=false
+
+# Lets Windows reach services in WSL through localhost.
+localhostforwarding=true
+
+# Nested virtualization is off.
+nestedVirtualization=false
+
+[experimental]
+# Lets the virtual disk shrink automatically when files are deleted.
+sparseVhd=true

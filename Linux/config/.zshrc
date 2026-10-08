@@ -118,7 +118,7 @@ MY_TOOLS="
   gitui     - terminal git ui
   topgrade  - detects which tools you use and runs the appropriate commands to update them
               use  'topgrade --disable gcloud' to skip GCP cli
-  exa       - modern replacement for ls
+  eza       - modern replacement for ls
   bottom    - customizable cross-platform graphical process/system monitor for the terminal
   broot     - tool through which you can navigate directories
   lsd       - an ls with a lot of pretty colors and awesome icons
@@ -167,26 +167,28 @@ alias moon='curl https://wttr.in/Moon'
 alias starwars=' telnet towel.blinkenlights.nl'
 alias tools='echo $MY_TOOLS'
 alias topgr='topgrade -y --disable gcloud'
-export PAGER="most"
+command -v most >/dev/null 2>&1 && export PAGER="most"
 
 export PATH="$PATH:$HOME/.local/bin"
 export PATH="$PATH:/snap/bin"
-export PATH="$PATH:/home/mbacon/go/bin"
-#export XDG_DATA_DIRS="/home/mbacon/.local/share/flatpak/exports/share"
+export PATH="$PATH:$HOME/go/bin"
+#export XDG_DATA_DIRS="$HOME/.local/share/flatpak/exports/share"
 
-export NOTES_CLI_HOME="/home/mbacon/OneDrive/WorkRepos/notes"
+export NOTES_CLI_HOME="$HOME/OneDrive/WorkRepos/notes"
 export NOTES_CLI_EDITOR=nano # Set your favorite editor
 
-. "$HOME/.cargo/env"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
-source /home/mbacon/.config/broot/launcher/bash/br
+[ -f "$HOME/.config/broot/launcher/bash/br" ] && source "$HOME/.config/broot/launcher/bash/br"
 
-#. /home/mbacon/mouse.zsh
+[ -x /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+#. $HOME/mouse.zsh
 #zle-toggle-mouse
 
-export PATH="$PATH:$HOME/.local/bin"
-export PAGER="most"
+command -v flatpak >/dev/null 2>&1 && alias wezterm='flatpak run org.wezfurlong.wezterm'
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+# Settings for this machine only (not committed to the repository).
+if [ -f "$HOME/.shellrc.local" ]; then
+    source "$HOME/.shellrc.local"
+fi

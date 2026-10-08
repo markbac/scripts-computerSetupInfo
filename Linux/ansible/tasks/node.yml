@@ -1,0 +1,58 @@
+---
+- name: Install nvm, Node.js and the global npm packages
+  when: "'nvm' in want.installers"
+  vars:
+    nvm_dir: "{{ home }}/.nvm"
+  environment:
+    NVM_DIR: "{{ nvm_dir }}"
+  block:
+    - name: Download the nvm installer (pinned tag, checksum verified)
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/nvm-sh/nvm/{{ pins.nvm.version }}/install.sh"
+        dest: "{{ cache_dir }}/nvm-install-{{ pins.nvm.version }}.sh"
+        checksum: "sha256:{{ pins.nvm.sha256 }}"
+        mode: "0700"
+
+    - name: Run the nvm installer
+      ansible.builtin.command: bash "{{ cache_dir }}/nvm-install-{{ pins.nvm.version }}.sh"
+      args:
+        creates: "{{ nvm_dir }}/nvm.sh"
+      environment:
+        # The dotfiles already load nvm, so stop the installer editing them.
+        PROFILE: /dev/null
+
+    - name: Install the current LTS release of Node.js
+      ansible.builtin.shell: |
+        set -o pipefail
+        . "$NVM_DIR/nvm.sh"
+        nvm install --lts
+      args:
+        executable: /bin/bash
+        creates: "{{ nvm_dir }}/alias/default"
+
+    - name: List the global npm packages already installed
+      ansible.builtin.shell: |
+        set -o pipefail
+        . "$NVM_DIR/nvm.sh"
+        npm ls -g --depth=0 --parseable | tail -n +2 | sed 's|.*/node_modules/||'
+      args:
+        executable: /bin/bash
+      register: npm_installed
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Install the missing global npm packages
+      ansible.builtin.shell: |
+        set -o pipefail
+        . "$NVM_DIR/nvm.sh"
+        npm install -g "{{ item }}"
+      args:
+        executable: /bin/bash
+      loop: "{{ want.npm | difference(npm_installed.stdout_lines | default([])) }}"
+      changed_when: true
+
+    - name: Show the npm packages a real run would install
+      ansible.builtin.debug:
+        msg: "{{ want.npm | difference(npm_installed.stdout_lines | default([])) }}"
+      when: ansible_check_mode

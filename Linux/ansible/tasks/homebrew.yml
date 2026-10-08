@@ -1,0 +1,29 @@
+---
+# Homebrew refuses to install as root, so this only runs for a normal user.
+- name: Install Homebrew and its packages
+  when:
+    - "'homebrew' in want.installers"
+    - ansible_facts.user_uid != 0
+  vars:
+    brew_bin: /home/linuxbrew/.linuxbrew/bin
+  block:
+    - name: Download the Homebrew installer (pinned commit, checksum verified)
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/Homebrew/install/{{ pins.homebrew_install.commit }}/install.sh"
+        dest: "{{ cache_dir }}/homebrew-install.sh"
+        checksum: "sha256:{{ pins.homebrew_install.sha256 }}"
+        mode: "0700"
+
+    - name: Run the Homebrew installer
+      ansible.builtin.command: bash "{{ cache_dir }}/homebrew-install.sh"
+      args:
+        creates: "{{ brew_bin }}/brew"
+      environment:
+        NONINTERACTIVE: "1"
+
+    - name: Install the brew packages
+      community.general.homebrew:
+        name: "{{ want.brew }}"
+        path: "{{ brew_bin }}"
+        state: present
+      when: want.brew | length > 0

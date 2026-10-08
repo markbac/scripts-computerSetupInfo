@@ -1,0 +1,17 @@
+---
+- name: Turn on systemd for WSL
+  community.general.ini_file:
+    path: /etc/wsl.conf
+    section: boot
+    option: systemd
+    value: "true"
+    mode: "0644"
+  register: wsl_conf
+  when: is_wsl
+
+- name: Say how to apply the WSL change
+  ansible.builtin.debug:
+    msg: "systemd was enabled in /etc/wsl.conf. Run 'wsl --shutdown' from Windows, then reopen this distro."
+  when:
+    - is_wsl
+    - wsl_conf is changed

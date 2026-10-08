@@ -1,0 +1,29 @@
+---
+- name: Look at the existing dotfiles
+  ansible.builtin.stat:
+    path: "{{ home }}/{{ item }}"
+    follow: false
+  loop: "{{ dotfiles }}"
+  register: dotfile_state
+
+- name: Keep a copy of any regular file before replacing it
+  ansible.builtin.copy:
+    src: "{{ home }}/{{ item.item }}"
+    dest: "{{ home }}/{{ item.item }}.pre-setup"
+    remote_src: true
+    mode: preserve
+    force: false
+  loop: "{{ dotfile_state.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when:
+    - item.stat.exists
+    - not item.stat.islnk
+
+- name: Link the dotfiles from this repository
+  ansible.builtin.file:
+    src: "{{ repo_root }}/Linux/config/{{ item }}"
+    dest: "{{ home }}/{{ item }}"
+    state: link
+    force: true
+  loop: "{{ dotfiles }}"

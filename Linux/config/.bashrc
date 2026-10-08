@@ -115,7 +115,7 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
-. "$HOME/.cargo/env"
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
@@ -130,12 +130,16 @@ alias h='history'
 alias wthr='curl https://wttr.in/Man'
 alias hwthr='curl https://wttr.in/Blackburn'
 alias starwars=' telnet towel.blinkenlights.nl'
-export PAGER="most"
+command -v most >/dev/null 2>&1 && export PAGER="most"
 export PATH="$PATH:$HOME/.local/bin"
 
-source /home/mbacon/.config/broot/launcher/bash/br
+[ -f "$HOME/.config/broot/launcher/bash/br" ] && . "$HOME/.config/broot/launcher/bash/br"
 
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-export PAGER="most"
-export PATH="$PATH:$HOME/.local/bin"
-export PAGER="most"
+[ -x /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+command -v flatpak >/dev/null 2>&1 && alias wezterm='flatpak run org.wezfurlong.wezterm'
+
+# Settings for this machine only (not committed to the repository).
+if [ -f "$HOME/.shellrc.local" ]; then
+    . "$HOME/.shellrc.local"
+fi
