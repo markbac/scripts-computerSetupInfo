@@ -7,13 +7,10 @@ config/
   config.example.yml    # defaults, committed
   config.local.yml      # your copy, git-ignored
   pins.yml              # versions and SHA-256 checksums for downloads
-  packages/
-    common.yml          # cargo, npm, pipx, vscode_extensions
-    linux.yml           # apt, snap, flatpak, brew, pip_libs, fonts, installers
-    windows.yml         # winget, scoop, choco
+  packages.yml          # every package: common, linux and windows sections
 ```
 
-Every group in a package file has exactly two keys, and both must be present even when empty:
+Every group in `packages.yml` has exactly two keys, and both must be present even when empty:
 
 - `base` is safe for a work machine.
 - `personal` is added on top when the profile is `personal`.

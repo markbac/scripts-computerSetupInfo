@@ -1,6 +1,6 @@
 # What gets installed
 
-Generated from `config/packages/*.yml` by `docs/generate_packages.py`. Do not edit by hand.
+Generated from `config/packages.yml` by `docs/generate_packages.py`. Do not edit by hand.
 
 The **work** profile installs the base column. The **personal** profile installs both columns.
 

@@ -20,8 +20,8 @@
   vars:
     repo_root: "{{ playbook_dir | dirname | dirname }}"
     config_dir: "{{ repo_root }}/config"
-    # Point this somewhere else to use a private set of package lists.
-    packages_dir: "{{ config_dir }}/packages"
+    # Point this somewhere else to use a private package list.
+    packages_file: "{{ config_dir }}/packages.yml"
     home: "{{ ansible_facts.env.HOME }}"
     cache_dir: "{{ home }}/.cache/setup"
     need_sudo: "{{ ansible_facts.user_uid != 0 }}"
@@ -56,13 +56,10 @@
       when: local_settings.stat.exists
       tags: always
 
-    - name: Load the package lists
+    - name: Load the package list
       ansible.builtin.include_vars:
-        file: "{{ packages_dir }}/{{ item }}.yml"
-        name: "pkg_{{ item }}"
-      loop:
-        - common
-        - linux
+        file: "{{ packages_file }}"
+        name: packages
       tags: always
 
     - name: Detect the environment
@@ -96,7 +93,7 @@
     - name: Work out what to install
       ansible.builtin.set_fact:
         want: "{{ want | default({}) | combine({item.key: tiers | map('extract', item.value) | flatten}) }}"
-      loop: "{{ (pkg_common | dict2items) + (pkg_linux | dict2items) }}"
+      loop: "{{ (packages.common | dict2items) + (packages.linux | dict2items) }}"
       loop_control:
         label: "{{ item.key }}"
       tags: always

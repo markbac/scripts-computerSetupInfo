@@ -14,9 +14,10 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 CONFIG = ROOT / "config"
 TIERS = {"base", "personal"}
+PLATFORMS = {"common", "linux", "windows"}
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
-# Which pin each optional installer in linux.yml needs.
+# Which pin each optional installer in packages.yml (linux) needs.
 INSTALLER_PINS = {
     "rustup": "rustup",
     "nvm": "nvm",
@@ -47,8 +48,8 @@ def load(path):
         return None
 
 
-def check_packages(path, data):
-    rel = path.relative_to(ROOT)
+def check_packages(path, platform, data):
+    rel = f"{path.relative_to(ROOT)} ({platform})"
     if not isinstance(data, dict) or not data:
         err(f"{rel}: expected a mapping of package groups")
         return
@@ -110,14 +111,14 @@ def check_pins(pins, linux):
     wanted = linux.get("fonts", {})
     for font in wanted.get("base", []) + wanted.get("personal", []):
         if font not in font_sums:
-            err(f"config/pins.yml: font '{font}' is listed in linux.yml but has no checksum")
+            err(f"config/pins.yml: font '{font}' is listed in packages.yml (linux) but has no checksum")
     installers = linux.get("installers", {})
     for tier in TIERS:
         for name in installers.get(tier, []):
             pin = INSTALLER_PINS.get(name)
             if pin is None:
                 if name != "vscode" and name != "chrome":
-                    err(f"linux.yml: installer '{name}' is not known to the validator")
+                    err(f"packages.yml (linux): installer '{name}' is not known to the validator")
             elif pin not in pins:
                 err(f"config/pins.yml: installer '{name}' has no '{pin}' pin")
 
@@ -126,11 +127,13 @@ def main():
     settings = load(CONFIG / "config.example.yml")
     check_settings(settings)
 
-    packages = {}
-    for path in sorted((CONFIG / "packages").glob("*.yml")):
-        data = load(path)
-        check_packages(path, data)
-        packages[path.stem] = data
+    path = CONFIG / "packages.yml"
+    packages = load(path)
+    if not isinstance(packages, dict) or set(packages) != PLATFORMS:
+        err(f"config/packages.yml: top-level keys must be exactly {sorted(PLATFORMS)}")
+        packages = {}
+    for platform, data in packages.items():
+        check_packages(path, platform, data)
 
     check_pins(load(CONFIG / "pins.yml"), packages.get("linux"))
 
@@ -139,7 +142,7 @@ def main():
         for message in errors:
             print(f"  - {message}")
         return 1
-    print(f"OK: checked config.example.yml, pins.yml and {len(packages)} package files")
+    print(f"OK: checked config.example.yml, pins.yml and packages.yml")
     return 0
 
 

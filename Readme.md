@@ -61,12 +61,10 @@ The full list for each profile is in [docs/packages.md](docs/packages.md).
 | --- | --- |
 | `config/config.example.yml` | Defaults: profile, git name and email, SSH key and apt upgrade switches. Committed. |
 | `config/config.local.yml` | Your copy, git-ignored. Overrides the example key by key. |
-| `config/packages/common.yml` | cargo, npm, pipx and VS Code extensions (the same on every OS) |
-| `config/packages/linux.yml` | apt, snap, flatpak, brew, Python libraries, fonts and optional installers |
-| `config/packages/windows.yml` | winget, Scoop and Chocolatey |
+| `config/packages.yml` | Every package, in one file: `common` (cargo, npm, pipx, VS Code extensions), `linux` (apt, snap, flatpak, brew, Python libraries, fonts, optional installers) and `windows` (winget, Scoop, Chocolatey) |
 | `config/pins.yml` | Pinned versions and SHA-256 checksums for downloaded installers |
 
-Each group in a package file has a `base` and a `personal` list. To add a package, add it to the right list and run `python3 docs/generate_packages.py` to refresh the table.
+Each group in `packages.yml` has a `base` and a `personal` list. To add a package, add it to the right list and run `python3 docs/generate_packages.py` to refresh the table.
 
 ### Pinned downloads
 

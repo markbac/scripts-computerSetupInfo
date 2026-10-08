@@ -286,8 +286,9 @@ if ($InstallProfile -notin 'work', 'personal') {
     throw "profile must be 'work' or 'personal', found '$InstallProfile'."
 }
 
-$windowsPackages = Import-YamlFile (Join-Path $ConfigDir 'packages\windows.yml')
-$commonPackages = Import-YamlFile (Join-Path $ConfigDir 'packages\common.yml')
+$allPackages = Import-YamlFile (Join-Path $ConfigDir 'packages.yml')
+$windowsPackages = $allPackages['windows']
+$commonPackages = $allPackages['common']
 
 Write-Host "Profile: $InstallProfile$(if ($DryRun) { ' (dry run, nothing will change)' })"
 

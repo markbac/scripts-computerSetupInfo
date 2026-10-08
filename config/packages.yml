@@ -1,0 +1,500 @@
+# Every package this repo installs, in one file.
+#
+# Layout: platform (common, linux, windows) > group (apt, scoop, npm, ...) > tier.
+# Each group has exactly two tiers, and both must be present even when empty:
+#   base:     safe for a work machine
+#   personal: added on top when profile is "personal"
+#
+# common applies to Linux and Windows alike. tests/validate_config.py checks the shape.
+# After editing, run: python3 docs/generate_packages.py
+
+
+# Packages that install the same way on every OS.
+common:
+  # Built from source with "cargo install". Needs rustup (see linux.yml installers).
+  cargo:
+    base:
+      - mdbook
+      - mdbook-pdf
+      - mdbook-plantuml
+      - mdbook-codeblocks
+      - mdbook-mermaid
+      - cargo-update
+      - rink
+    personal:
+      - lfs
+      - rust-kanban
+      - kanorg
+      - rh
+      - xplr
+
+  # Installed globally with npm (Node comes from nvm on Linux).
+  npm:
+    base:
+      - "@asyncapi/cli"
+      - "@asyncapi/generator"
+      - "@asyncapi/modelina"
+      - "@asyncapi/parser"
+      - mock-to-openapi
+      - ungit
+      - create-openapi-repo
+      - markdownlint-cli2
+      - "@mermaid-js/mermaid-cli"
+    personal:
+      - vtop
+      - gtop
+
+  # Python command line tools, installed with pipx so each gets its own environment.
+  pipx:
+    base:
+      - yamllint
+      - pre-commit
+      - httpie
+      - adr-tools-python
+      - adr-viewer
+      - pyadr
+      - aafigure
+      - mdbook-pdf-outline
+    personal:
+      - glances
+      - hyfetch
+
+  # Extension IDs for "code --install-extension".
+  vscode_extensions:
+    base:
+      - 42Crunch.vscode-openapi
+      - aaron-bond.better-comments
+      - alefragnani.project-manager
+      - anweber.httpbook
+      - anweber.vscode-httpyac
+      - aprilandjan.ascii-tree-generator
+      - asyncapi.asyncapi-preview
+      - AykutSarac.jsoncrack-vscode
+      - batisteo.vscode-django
+      - bierner.markdown-mermaid
+      - BitBelt.converttoasciiart
+      - bmlsolutions.dotuml
+      - bpruitt-goddard.mermaid-markdown-syntax-highlighting
+      - buianhthang.xml2json
+      - chrmarti.regex
+      - daiyy.quick-html-previewer
+      - DavidAnson.vscode-markdownlint
+      - derek-nextty.openapi-viewer
+      - docsmsft.docs-yaml
+      - donjayamanne.python-environment-manager
+      - donjayamanne.python-extension-pack
+      - DotJoshJohnson.xml
+      - DougFinke.vscode-pandoc
+      - eamodio.gitlens
+      - esbenp.prettier-vscode
+      - fernandoescolar.vscode-solution-explorer
+      - GitHub.vscode-pull-request-github
+      - googlecloudtools.cloudcode
+      - Gruntfuggly.todo-tree
+      - hashicorp.terraform
+      - hediet.vscode-drawio
+      - jebbs.plantuml
+      - johnpapa.vscode-peacock
+      - kamikillerto.vscode-colorize
+      - KevinRose.vsc-python-indent
+      - maattdd.gitless
+      - Markwhen.markwhen
+      - marp-team.marp-vscode
+      - MartinPicard.vscode-openapi
+      - mermade.openapi-lint
+      - mirone.milkdown
+      - mkloubert.vscode-kanban
+      - mohsen1.prettify-json
+      - ms-dotnettools.csharp
+      - ms-python.python
+      - ms-toolsai.jupyter-keymap
+      - ms-vscode-remote.remote-wsl
+      - ms-vscode.powershell
+      - ms-vsliveshare.vsliveshare
+      - ms-vsliveshare.vsliveshare-audio
+      - njpwerner.autodocstring
+      - nopeslide.vscode-drawio-plugin-mermaid
+      - philosowaffle.openapi-designer
+      - pomdtr.excalidraw-editor
+      - rangav.vscode-thunder-client
+      - redhat.vscode-xml
+      - redhat.vscode-yaml
+      - RoeySagie.markdown-sort
+      - shd101wyy.markdown-preview-enhanced
+      - simonguo.vscode-markdown-table-sort
+      - stoplight.spectral
+      - streetsidesoftware.code-spell-checker
+      - tberman.json-schema-validator
+      - tehpeng.diagramspreviewer
+      - telesoho.vscode-markdown-paste-image
+      - tintinweb.graphviz-interactive-preview
+      - tomoki1207.pdf
+      - VisualStudioExptTeam.intellicode-api-usage-examples
+      - VisualStudioExptTeam.vscodeintellicode
+      - VolcanicBytes.xsd-navigator
+      - voldemortensen.rainbow-tags
+      - vstirbu.vscode-mermaid-preview
+      - vscode-icons-team.vscode-icons
+      - waleedashraf.asyncapi-validator-vscode
+      - wayou.vscode-todo-highlight
+      - wholroyd.jinja
+      - wraith13.windows-terminal
+      - yzane.markdown-pdf
+      - yzhang.markdown-all-in-one
+      - zaaack.markdown-editor
+      - zoellner.openapi-preview
+    personal:
+      - tonybaloney.vscode-pets
+
+# Linux and WSL. Tested against Ubuntu 24.04 package names.
+linux:
+  apt:
+    base:
+      # essentials and build tools
+      - nano
+      - build-essential
+      - procps
+      - curl
+      - wget
+      - openssh-client
+      - file
+      - cmake
+      - git
+      - git-lfs
+      - gh
+      - git-delta
+      - pkg-config
+      - ninja-build
+      - unzip
+      - gpg
+      - gnupg
+      - ca-certificates
+      - apt-transport-https
+      - software-properties-common
+      - psmisc
+      - lshw
+      - fontconfig
+      # python (pipx and venv are used by the python tasks)
+      - python3
+      - python3-setuptools
+      - python3-pip
+      - python3-venv
+      - python3-debian
+      - pipx
+      # libraries needed to build some cargo and python tools
+      - libssl-dev
+      - libgraphviz-dev
+      - libdbus-glib-1-2
+      - libncurses-dev
+      - libfreetype-dev
+      - libfontconfig1-dev
+      - libxkbcommon-dev
+      - libxcb1-dev
+      - libxcb-render0-dev
+      - libxcb-shape0-dev
+      - libxcb-xfixes0-dev
+      # shell and search
+      - zsh
+      - ripgrep
+      - fzf
+      - jq
+      - tmux
+      - direnv
+      - fd-find
+      - bat
+      - lsd
+      - eza
+      - zoxide
+      - tree
+      - most
+      - mc
+      - nnn
+      - ncdu
+      - duf
+      - htop
+      - btop
+      - hyperfine
+      - just
+      # code quality
+      - shellcheck
+      - shfmt
+      - ansible-lint
+      # docs and diagrams
+      - pandoc
+      - graphviz
+      - plantuml
+      - wkhtmltopdf
+      # embedded and IoT
+      - gdb
+      - picocom
+      - clang-format
+      - cppcheck
+      - tshark
+      # runtimes and containers
+      - default-jre
+      - dotnet-sdk-8.0
+      - podman
+      # networking
+      - net-tools
+      - inetutils-traceroute
+      # required for the snap and Wave Terminal installs
+      - snapd
+    personal:
+      - flatpak
+      - golang-go
+      - wireless-tools
+      - x11-apps
+      - mate-terminal
+      - python3-tk
+      - vnstat
+      - vnstati
+      - neofetch
+      - screenfetch
+      - inxi
+      - nmon
+      - atop
+      - bpytop
+      - httrack
+      - debian-goodies
+      - cmatrix
+      - cowsay
+      - sl
+      - figlet
+      - libaa-bin
+      - lolcat
+      - aewan
+      - jp2a
+      - cbonsai
+      - aview
+      - chafa
+      - stacer
+      - slurm
+      - bmon
+      - tcptrack
+      - speedometer
+      - cpu-x
+      - hardinfo
+
+  # Only installed when a Raspberry Pi is detected.
+  apt_raspberry_pi:
+    base: []
+    personal:
+      - scratch3
+      - realvnc-vnc-viewer
+
+  # Python libraries, installed into one virtualenv at ~/.venvs/tools (PEP 668
+  # stops pip installing into the system Python on current Ubuntu and Debian).
+  pip_libs:
+    base:
+      - wheel
+      - markdown
+      - pdfkit
+      - diagrams
+      - erd-from-json-table-schema
+      - pdfminer.six[image]
+      - pymupdf
+      - aiohttp
+      - openleadr
+    personal:
+      - pywebcopy
+
+  # Snap and flatpak are skipped on WSL (GUI apps belong on the Windows side).
+  # Wave Terminal is a GUI app too, so install it on Windows under WSL.
+  snap:
+    base:
+      - waveterm
+    personal:
+      - bashtop
+      - nutty
+      - krita
+      - standard-notes
+      - wekan
+      - onefetch
+      - fast
+      - notepadqq
+      - bottom
+      - mqtt-explorer
+      - mosquitto
+      - redis
+      - mapscii
+      - asciiquarium
+      - simplenote
+      - joplin
+      - dbgate
+
+  # Snaps that need --classic confinement.
+  snap_classic:
+    base: []
+    personal:
+      - sublime-text
+      - pycharm-community
+      - alacritty
+
+  flatpak:
+    base: []
+    personal:
+      - org.gaphor.Gaphor
+      - dev.lapce.lapce
+      - org.wezfurlong.wezterm
+      - com.jetpackduba.Gitnuro
+
+  # Homebrew on Linux (installed by the "homebrew" installer below).
+  brew:
+    base: []
+    personal:
+      - nushell
+      - tokei
+      - dust
+      - gitui
+      - eureka
+      - dua
+      - mdcat
+      - topgrade
+      - procs
+      - trippy
+      - macchina
+      - daveshanley/vacuum/vacuum
+
+  # Nerd Fonts to install. Each needs a checksum in config/pins.yml.
+  fonts:
+    base:
+      - Meslo
+      - Noto
+      - RobotoMono
+      - SourceCodePro
+    personal: []
+
+  # Optional installers. Each downloads a pinned, checksum-verified file (see
+  # config/pins.yml) or adds a signed apt repository. Names match tasks in
+  # Linux/ansible/tasks/.
+  installers:
+    base:
+      - vscode
+      - rustup
+      - nvm
+      - oh_my_zsh
+    personal:
+      - homebrew
+      - chrome
+      - ctop
+      - browsh
+      - pfetch
+      - gitupdate
+      - swagger_editor
+
+# Windows. winget IDs and Scoop names were checked against the real repositories, Chocolatey names were not re-checked.
+windows:
+  winget:
+    base:
+      - CommandLine.Wave
+      - GitHub.cli
+      - Microsoft.Teams
+      - Rustlang.Rustup
+    personal:
+      - Valve.Steam
+      - EpicGames.EpicGamesLauncher
+      - Microsoft.VisualStudio.2022.Community
+
+  scoop:
+    base:
+      - ripgrep
+      - fzf
+      - jq
+      - shellcheck
+      - shfmt
+      - pandoc
+      - git-lfs
+      - eza
+      - just
+      - direnv
+      - pipx
+      - ninja
+      - btop
+      - topgrade
+      - lsd
+      - broot
+      - dua
+    personal:
+      - macchina
+      - neofetch
+      - procs
+      - trippy
+
+  choco:
+    base:
+      - powershell-core
+      - microsoft-windows-terminal
+      - git
+      - vscode
+      - cascadiafonts
+      - firacode
+      - 7zip
+      - powertoys
+      - notepadplusplus
+      - sysinternals
+      - python3
+      - drawio
+      - winscp
+      - winmerge
+      - tortoisegit
+      - putty
+      - graphviz
+      - llvm
+      - cppcheck
+      - plantuml
+      - nano
+      - treesizefree
+      - windirstat
+      - curl
+      - wireshark
+      - dbgate
+      - nvm
+      - oh-my-posh
+      - dotnet
+      - wsl2
+      - wsl-ubuntu-2204
+      - miktex
+      - adobereader
+      - irfanview
+      - irfanviewplugins
+      - googledrive
+      - onenote
+      - zoom
+      - bottom
+      - gitui
+      - bat
+      - mdcat
+      - tokei
+      - delta
+      - onefetch
+      - alacritty
+      - vnc-viewer
+      - openvpn
+      - hwmonitor
+    personal:
+      - vlc
+      - bluescreenview
+      - whocrashed
+      - speccy
+      - libreoffice-fresh
+      - docker-desktop
+      - googlechrome
+      - microsoft-edge
+      - opera
+      - firefox
+      - bulkrenameutility
+      - gimp
+      - paint.net
+      - foxitreader
+      - ccleaner
+      - synology-note-station-client
+      - synologydrive
+      - cloudstation
+      - sourcemonitor
+      - sonos-controller
+      - googleearthpro
+      - whatsapp
+      - obs-studio
+      - xnview
+      - bitdefender
+      - wolframalpha
