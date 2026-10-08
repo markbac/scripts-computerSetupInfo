@@ -37,7 +37,7 @@ check() { # check <description> <command...>
 
 section "Config files"
 check "YAML structure, tiers and pins" python3 -I tests/validate_config.py
-check "docs/packages.md matches the YAML" python3 -I docs/generate_packages.py --check
+check "docs/packages.md and packages.yml match the YAML" python3 -I docs/generate_packages.py --check
 
 section "Shell scripts and dotfiles"
 if have shellcheck; then
